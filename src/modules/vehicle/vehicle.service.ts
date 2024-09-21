@@ -12,4 +12,9 @@ export class VehicleService {
   async findAll(): Promise<Vehiculo[]> {
     return this.vehicleRepository.find();
   }
+
+  async create(vehicleData: Vehiculo): Promise<Vehiculo> {
+    const newVehicle = this.vehicleRepository.create(vehicleData); 
+    return this.vehicleRepository.save(newVehicle); 
+  }
 }

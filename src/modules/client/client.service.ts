@@ -12,4 +12,9 @@ export class ClientService {
   async findAll(): Promise<Cliente[]> {
     return this.clientRepository.find();
   }
+
+  async create(clienteData: Cliente): Promise<Cliente> {
+    const newClient = this.clientRepository.create(clienteData); 
+    return this.clientRepository.save(newClient); 
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { Cliente } from 'src/database/entities/client.entity';
 
@@ -9,5 +9,10 @@ export class ClientController {
   @Get()
   async findAll(): Promise<Cliente[]> {
     return this.clientService.findAll();
+  }
+
+  @Post()
+  async create(@Body() clienteData: Cliente): Promise<Cliente> {
+    return this.clientService.create(clienteData);
   }
 }

@@ -15,7 +15,7 @@ export class Cliente {
   @Column({ type: 'varchar', length: 255 })
   country: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 20, unique: true })
   phone: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

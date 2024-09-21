@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-
+import { Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { Vehiculo } from 'src/database/entities/vehicle.entity';
 import { Cliente } from './client.entity';
 

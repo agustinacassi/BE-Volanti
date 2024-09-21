@@ -4,9 +4,10 @@ import { DatabaseModule } from './database/database.module';
 import { VehicleModule } from './modules/vehicle/vehicle.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ClienteVehiculoModule } from './modules/client_vehicle/client-vehicle.module';
 
 @Module({
-  imports: [DatabaseModule, ClientModule, VehicleModule],
+  imports: [DatabaseModule, ClientModule, VehicleModule, ClienteVehiculoModule],
   controllers: [AppController],
   providers: [AppService],
 })
