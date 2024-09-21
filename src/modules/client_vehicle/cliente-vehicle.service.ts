@@ -52,4 +52,10 @@ export class ClienteVehiculoService {
             data: nuevaRelacion
         };
     }
+
+    async obtenerTodasLasRelaciones() {
+        return this.clienteRepository.find({
+          relations: ['clientesVehiculos', 'clientesVehiculos.vehiculo'],
+        });
+    }
 }
