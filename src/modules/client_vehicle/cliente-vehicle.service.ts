@@ -3,7 +3,6 @@ import { Repository } from 'typeorm';
 import { Cliente } from 'src/database/entities/client.entity';
 import { Vehiculo } from 'src/database/entities/vehicle.entity';
 import { ClientesVehiculos } from 'src/database/entities/client_vehicle.entity';
-import { RelacionClienteVehiculoDTO } from './relation-client-vehicle.dto';
 
 @Injectable()
 export class ClienteVehiculoService {
@@ -16,7 +15,7 @@ export class ClienteVehiculoService {
     private clientesVehiculosRepository: Repository<ClientesVehiculos>
   ) {}
 
-    async establecerRelacion(dto: RelacionClienteVehiculoDTO): Promise<any> {
+    async establecerRelacion(dto): Promise<any> {
         // Crea un nuevo cliente con los datos proporcionados
         const cliente = this.clienteRepository.create({
             name: dto.name,
