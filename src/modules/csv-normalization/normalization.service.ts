@@ -1,10 +1,12 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import * as phoneUtil from 'google-libphonenumber';
 
 @Injectable()
 export class NormalizationService {
-  private readonly apiUrl = 'https://app.wordware.ai/api/released-app/507e6517-1af7-4097-915b-e35a101bc989/run';
+  private readonly apiUrl = process.env.WORDWARE_API_URL
+  private readonly phoneUtil = phoneUtil.PhoneNumberUtil.getInstance();
 
   constructor(private readonly httpService: HttpService) {}
 
@@ -28,7 +30,11 @@ export class NormalizationService {
       console.log('Raw response:', JSON.stringify(response.data, null, 2));
 
       // Extraer el JSON normalizado de la respuesta
-      const normalizedData = this.extractJsonFromResponse(response.data);
+      let normalizedData = this.extractJsonFromResponse(response.data);
+      
+      // Normalizar los números de teléfono y reemplazar en el JSON
+      normalizedData = this.normalizeAndReplacePhoneNumbers(normalizedData);
+      
       return normalizedData;
 
     } catch (error) {
@@ -42,10 +48,8 @@ export class NormalizationService {
 
   private extractJsonFromResponse(responseData: string): any {
     try {
-      // Dividir la respuesta en líneas
       const lines = responseData.split('\n');
       
-      // Buscar la línea que contiene el JSON normalizado
       for (const line of lines) {
         try {
           const chunk = JSON.parse(line);
@@ -54,15 +58,13 @@ export class NormalizationService {
               chunk.value.values && 
               chunk.value.values.data_normalization) {
             
-            // Extraer el JSON de data_normalization
             const jsonString = chunk.value.values.data_normalization
-              .replace(/^```json\n/, '')  // Remover el prefijo ```json
-              .replace(/\n```$/, '');     // Remover el sufijo ```
+              .replace(/^```json\n/, '')
+              .replace(/\n```$/, '');
             
             return JSON.parse(jsonString);
           }
         } catch (parseError) {
-          // Ignorar errores de parsing para líneas que no son JSON válido
           continue;
         }
       }
@@ -76,5 +78,24 @@ export class NormalizationService {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private normalizeAndReplacePhoneNumbers(data: any[]): any[] {
+    return data.map(item => {
+      if (item.phone) {
+        try {
+          const number = this.phoneUtil.parse(item.phone, 'AR');
+          if (this.phoneUtil.isValidNumber(number)) {
+            item.phone = this.phoneUtil.format(number, phoneUtil.PhoneNumberFormat.E164);
+          } else {
+            console.warn(`Invalid phone number: ${item.phone}`);
+            item.phoneValidationStatus = 'INVALID';
+          }
+        } catch (error) {
+          console.error(`Error normalizing phone number: ${item.phone}`, error);
+        }
+      }
+      return item;
+    });
   }
 }
