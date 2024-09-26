@@ -1,8 +1,15 @@
 import { DataSource } from 'typeorm';
-import { Cliente } from 'src/database/entities/client.entity';
-import { Vehiculo } from 'src/database/entities/vehicle.entity';
-import { ClientesVehiculos } from 'src/database/entities/client_vehicle.entity';
+import { Cliente } from './entities/client.entity';
+import { Vehiculo } from './entities/vehicle.entity';
+import { ClientesVehiculos } from './entities/client_vehicle.entity';
 
+/**
+ * @constant
+ * @name repositoryProviders
+ * @type {Array<{provide: string, useFactory: Function, inject: string[]}>}
+ * @description Proveedores de repositorios para las entidades Cliente, Vehiculo y ClientesVehiculos.
+ * Estos proveedores se utilizan para inyectar repositorios en los servicios y controladores de la aplicación.
+ */
 export const repositoryProviders = [
   {
     provide: 'CLIENTE_REPOSITORY',

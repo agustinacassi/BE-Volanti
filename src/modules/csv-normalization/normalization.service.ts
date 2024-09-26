@@ -5,7 +5,7 @@ import * as phoneUtil from 'google-libphonenumber';
 
 @Injectable()
 export class NormalizationService {
-  private readonly apiUrl = process.env.WORDWARE_API_URL
+  private readonly apiUrl = "https://app.wordware.ai/api/released-app/64bbca92-d364-4039-9e05-ea73b86c3913/run"
   private readonly phoneUtil = phoneUtil.PhoneNumberUtil.getInstance();
 
   constructor(private readonly httpService: HttpService) {}
@@ -14,7 +14,7 @@ export class NormalizationService {
     const jsonString = JSON.stringify(data);
     const payload = {
       inputs: { JSON: jsonString },
-      version: '^1.0',
+      version: '^1.2',
     };
 
     try {
@@ -27,14 +27,15 @@ export class NormalizationService {
         })
       );
 
-      console.log('Raw response:', JSON.stringify(response.data, null, 2));
+      console.log('Response from API:', response.data);
+
 
       // Extraer el JSON normalizado de la respuesta
       let normalizedData = this.extractJsonFromResponse(response.data);
       
       // Normalizar los números de teléfono y reemplazar en el JSON
       normalizedData = this.normalizeAndReplacePhoneNumbers(normalizedData);
-      
+      console.log(normalizedData)
       return normalizedData;
 
     } catch (error) {

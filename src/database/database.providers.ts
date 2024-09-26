@@ -1,6 +1,11 @@
 import { DataSource } from 'typeorm';
 
-//Database Connection
+/**
+ * @constant
+ * @name databaseProviders
+ * @type {Array<Object>}
+ * @description Proveedores de base de datos para la aplicación.
+ */
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE',

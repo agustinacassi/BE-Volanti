@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { Cliente } from 'src/database/entities/client.entity';
-import { Vehiculo } from 'src/database/entities/vehicle.entity';
 import { ClientesVehiculos } from 'src/database/entities/client_vehicle.entity';
+import { Vehiculo } from 'src/database/entities/vehicle.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ClienteVehiculoService {
@@ -15,46 +15,56 @@ export class ClienteVehiculoService {
     private clientesVehiculosRepository: Repository<ClientesVehiculos>
   ) {}
 
-    async establecerRelacion(dto): Promise<any> {
-        // Crea un nuevo cliente con los datos proporcionados
-        const cliente = this.clienteRepository.create({
-            name: dto.name,
-            alias: dto.alias,
-            gender: dto.gender,
-            country: dto.country,
-            phone: dto.phone,
-            is_company: dto.is_company
-        });
+  async findAll(options: any): Promise<[Cliente[], number]> {
+    return this.clienteRepository.findAndCount({
+      ...options,
+      relations: ['clientesVehiculos', 'clientesVehiculos.vehiculo'],
+    });
+  }
 
-        // Crea un nuevo vehículo con los datos proporcionados
-        const vehiculo = this.vehiculoRepository.create({
-            brand: dto.brand,
-            model: dto.model,
-            plate: dto.plate
-        });
+  async createFromApi(apiData: any[]): Promise<void> {
+    for (const item of apiData) {
+      // Verificar si el cliente ya existe
+      let cliente = await this.clienteRepository.findOne({ where: { phone: item.phone } });
 
-        // Guarda ambos registros en la base de datos
+      // Si no existe, crear uno nuevo
+      if (!cliente) {
+        cliente = this.clienteRepository.create({
+          name: item.name,
+          alias: item.alias,
+          phone: item.phone,
+          country: item.country,
+          gender: item.gender,
+          isCompany: item.is_company,
+        });
         await this.clienteRepository.save(cliente);
-        await this.vehiculoRepository.save(vehiculo);
+      }
 
-        // Establece una nueva relación entre el cliente y el vehículo creado
-        const nuevaRelacion = new ClientesVehiculos();
-        nuevaRelacion.cliente = cliente;
-        nuevaRelacion.vehiculo = vehiculo;
+      // Verificar si el vehículo ya existe
+      let vehiculo = await this.vehiculoRepository.findOne({ where: { plate: item.plate } });
 
-        // Guarda la relación en la base de datos
-        await this.clientesVehiculosRepository.save(nuevaRelacion);
-
-        // Devuelve la relación creada
-        return {
-            message: "Relación cliente-vehículo creada exitosamente",
-            data: nuevaRelacion
-        };
-    }
-
-    async obtenerTodasLasRelaciones() {
-        return this.clienteRepository.find({
-          relations: ['clientesVehiculos', 'clientesVehiculos.vehiculo'],
+      // Si no existe, crear uno nuevo
+      if (!vehiculo) {
+        vehiculo = this.vehiculoRepository.create({
+          brand: item.brand,
+          model: item.model,
+          plate: item.plate,
         });
+        await this.vehiculoRepository.save(vehiculo);
+      }
+
+      // Crear la relación cliente-vehículo si no existe
+      const existingRelation = await this.clientesVehiculosRepository.findOne({
+        where: { cliente: cliente, vehiculo: vehiculo },
+      });
+
+      if (!existingRelation) {
+        const clienteVehiculo = this.clientesVehiculosRepository.create({
+          cliente,
+          vehiculo,
+        });
+        await this.clientesVehiculosRepository.save(clienteVehiculo);
+      }
     }
+  }
 }

@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ClientModule } from './modules/client/client.module';
 import { DatabaseModule } from './database/database.module';
-import { VehicleModule } from './modules/vehicle/vehicle.module';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ClienteVehiculoModule } from './modules/client_vehicle/client-vehicle.module';
 import { NormalizationModule } from './modules/csv-normalization/normalization.module';
+import { ConfigModule } from '@nestjs/config';
+
 
 @Module({
-  imports: [DatabaseModule, ClientModule, VehicleModule, ClienteVehiculoModule, NormalizationModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true
+    }),
+    DatabaseModule, ClienteVehiculoModule, NormalizationModule
+  ],
 })
 export class AppModule {}

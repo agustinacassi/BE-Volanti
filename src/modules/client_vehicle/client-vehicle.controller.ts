@@ -1,36 +1,39 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ClienteVehiculoService } from './cliente-vehicle.service';
 
-@Controller('cliente-vehiculo') 
+
+/**
+ * Controller to handle operations related to clients (leads) and their associated vehicles.
+ */
+@Controller('clientes_vehiculos')
 export class ClienteVehiculoController {
   constructor(private readonly clienteVehiculoService: ClienteVehiculoService) {}
 
-  @Post()
-  async establecerRelacion(@Body() dto) {
-    const relacion = await this.clienteVehiculoService.establecerRelacion(dto);
-    return { 
-      message: 'Relación cliente-vehículo creada exitosamente', 
-      data: relacion 
+  @Get()
+  async getAllLeads(@Query() query) {
+    const { _start, _end, _sort, _order, ...filter } = query;
+    const [data, total] = await this.clienteVehiculoService.findAll({
+      skip: Number(_start),
+      take: Number(_end) - Number(_start),
+      order: { [_sort]: _order.toLowerCase() },
+      where: filter,
+    });
+
+    const transformedData = data.map(cliente => ({
+      ...cliente,
+      vehiculos: cliente.clientesVehiculos.map(cv => cv.vehiculo)
+    }));
+
+    return {
+      data: transformedData,
+      total,
     };
   }
 
-  @Get()
-  async obtenerRelaciones() {
-    const clientes = await this.clienteVehiculoService.obtenerTodasLasRelaciones();
-    return clientes.map(cliente => ({
-      id: cliente.id,
-      name: cliente.name,
-      alias: cliente.alias,
-      gender: cliente.gender,
-      country: cliente.country,
-      phone: cliente.phone,
-      is_company: cliente.is_company,
-      vehiculos: cliente.clientesVehiculos.map(cv => ({
-        id: cv.vehiculo.id,
-        brand: cv.vehiculo.brand,
-        model: cv.vehiculo.model,
-        plate: cv.vehiculo.plate
-      }))
-    }));
+  @Post()
+  async createFromApi(@Body() body: { data: any[] }) {
+    await this.clienteVehiculoService.createFromApi(body.data);
+    return { message: 'Clientes y vehículos guardados exitosamente' };
   }
+
 }

@@ -9,12 +9,12 @@ export class Vehiculo {
   @Column({ type: 'varchar', length: 255 })
   brand: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255 })
   model: string;
 
-  @Column({ type: 'varchar', length: 20, unique: true })
+  @Column({ type: 'varchar', length: 20 })
   plate: string;
 
-  @OneToMany(() => ClientesVehiculos, (clientesVehiculos) => clientesVehiculos.vehiculo)
+  @OneToMany(() => ClientesVehiculos, (clienteVehiculo) => clienteVehiculo.vehiculo)
   clientesVehiculos: ClientesVehiculos[];
 }
