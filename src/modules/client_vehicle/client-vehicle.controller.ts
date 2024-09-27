@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ClienteVehiculoService } from './cliente-vehicle.service';
 
 
@@ -28,12 +28,6 @@ export class ClienteVehiculoController {
       data: transformedData,
       total,
     };
-  }
-
-  @Post()
-  async createFromApi(@Body() body: { data: any[] }) {
-    await this.clienteVehiculoService.createFromApi(body.data);
-    return { message: 'Clientes y vehículos guardados exitosamente' };
   }
 
 }
