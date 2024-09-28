@@ -128,11 +128,69 @@ export class ClienteVehiculoService {
         return this.phoneUtil.format(number, phoneUtil.PhoneNumberFormat.E164);
       } else {
         console.warn(`Número de teléfono no válido: ${phone}`);
-        return phone;
+        return this.additionalNormalization(phone)
       }
     } catch (error) {
       console.error(`Error al normalizar el número de teléfono ${phone}: ${error.message}`);
-      return phone; // Devolver el número original si hay un error
     }
   }
+
+  private additionalNormalization(phone: string){
+    try {
+      // Eliminar espacios, paréntesis y guiones
+      phone = phone.replace(/[ ()-]/g, '');
+
+      // Casos con prefijo de país
+      if (phone.startsWith('54')) {
+          if (!phone.startsWith('+')) {
+              phone = '+' + phone; // Añadir el '+' si no está presente
+          }
+
+          // Caso: +54911, pero sin el 15 en el medio
+          if (phone.length === 14 && phone.startsWith('+54911')) {
+              return phone; // Si ya es correcto, devolver el número
+          }
+
+          // Caso: +5411 seguido de un número de teléfono sin 9
+          if (phone.startsWith('+5411') && phone.length === 13) {
+              phone = phone.replace('+5411', '+54911');
+          }
+
+          // Caso: Sobran números al final
+          if (phone.length > 14) {
+              phone = phone.slice(0, 14); // Limitar a los primeros 14 caracteres
+          }
+      }
+
+      // Casos sin prefijo de país
+      else if (phone.startsWith('15')) {
+          // Quitar el 15 y agregar +54911
+          phone = '+54911' + phone.slice(2);
+      }
+      else if (phone.startsWith('11')) {
+          // Agregar +549 antes del 11
+          phone = '+549' + phone;
+      }
+      else if (phone.startsWith('9')) {
+          // Si ya tiene un 9 adelante, solo agregar el '+'
+          phone = '+' + phone;
+      }
+      else if (phone.startsWith('0')) {
+          // Quitar el 0 y agregar +549
+          phone = '+549' + phone.slice(1);
+      }
+
+      // Validar el número con el formato E164 usando google-libphonenumber
+      const number = this.phoneUtil.parse(phone, 'AR');
+      if (this.phoneUtil.isValidNumber(number)) {
+          return this.phoneUtil.format(number, phoneUtil.PhoneNumberFormat.E164);
+      } else {
+          console.warn(`Número de teléfono no válido: ${phone}`);
+      }
+  } catch (error) {
+      console.error(`Error al normalizar el número de teléfono ${phone}: ${error.message}`);
+  }
+  return phone; // Devolver el número en caso de no poder normalizar correctamente
+  }
+
 }
