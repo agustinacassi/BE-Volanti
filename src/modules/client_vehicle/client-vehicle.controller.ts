@@ -11,19 +11,22 @@ export class ClienteVehiculoController {
 
   @Get()
   async getAllLeads(@Query() query) {
-    const { _start, _end, _sort, _order, ...filter } = query;
+    console.log('Received query:', query); // For debugging
+  
+    const { _start = '0', _end = '10', _sort = 'id', _order = 'ASC', ...filter } = query;
+    
     const [data, total] = await this.clienteVehiculoService.findAll({
       skip: Number(_start),
       take: Number(_end) - Number(_start),
       order: { [_sort]: _order.toLowerCase() },
       where: filter,
     });
-
+  
     const transformedData = data.map(cliente => ({
       ...cliente,
-      vehiculos: cliente.clientesVehiculos.map(cv => cv.vehiculo)
+      vehiculos: cliente.clientesVehiculos?.map(cv => cv.vehiculo) || []
     }));
-
+  
     return {
       data: transformedData,
       total,
