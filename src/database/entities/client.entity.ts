@@ -22,7 +22,7 @@ export class Cliente {
   @Column({ type: 'varchar', length: 255, nullable: true })
   alias: string;
 
-  @Column({ type: 'char', length: 1 })
+  @Column({ type: 'char', length: 1, nullable: true })
   gender: string;
 
   @OneToMany(() => ClientesVehiculos, (clienteVehiculo) => clienteVehiculo.cliente)

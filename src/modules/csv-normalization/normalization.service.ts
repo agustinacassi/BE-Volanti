@@ -23,6 +23,7 @@ export class NormalizationService {
           },
         }
       );
+      //OK
       return response.data;
     } catch (error) {
       console.error('Error in normalizeData:', error.response?.data || error.message);

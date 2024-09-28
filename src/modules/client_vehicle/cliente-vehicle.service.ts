@@ -3,9 +3,12 @@ import { Cliente } from 'src/database/entities/client.entity';
 import { ClientesVehiculos } from 'src/database/entities/client_vehicle.entity';
 import { Vehiculo } from 'src/database/entities/vehicle.entity';
 import { Repository } from 'typeorm';
+import * as phoneUtil from 'google-libphonenumber';
 
 @Injectable()
 export class ClienteVehiculoService {
+  private phoneUtil: phoneUtil.PhoneNumberUtil;
+
   constructor(
     @Inject('CLIENTE_REPOSITORY')
     private clienteRepository: Repository<Cliente>,
@@ -13,7 +16,9 @@ export class ClienteVehiculoService {
     private vehiculoRepository: Repository<Vehiculo>,
     @Inject('CLIENTES_VEHICULOS_REPOSITORY')
     private clientesVehiculosRepository: Repository<ClientesVehiculos>
-  ) {}
+  ) {
+    this.phoneUtil = phoneUtil.PhoneNumberUtil.getInstance();
+  }
 
   async findAll(options: any): Promise<[Cliente[], number]> {
     return this.clienteRepository.findAndCount({
@@ -68,18 +73,19 @@ export class ClienteVehiculoService {
   
     const cleanJson = JSON.parse(jsonMatch[1]);
   
-    console.log(cleanJson);
-  
     for (const item of cleanJson) {
+      const normalizedPhone = this.normalizePhoneNumber(item.phone, item.country);
+      console.log(normalizedPhone, "normalized phone")
+
       // Verificar si el cliente ya existe
-      let cliente = await this.clienteRepository.findOne({ where: { phone: item.phone } });
+      let cliente = await this.clienteRepository.findOne({ where: { phone: normalizedPhone } });
   
       // Si no existe, crear uno nuevo
       if (!cliente) {
         cliente = this.clienteRepository.create({
           name: item.name,
           alias: item.alias,
-          phone: item.phone,
+          phone: normalizedPhone,
           country: item.country,
           gender: item.gender,
           isCompany: item.is_company,
@@ -112,6 +118,21 @@ export class ClienteVehiculoService {
         });
         await this.clientesVehiculosRepository.save(clienteVehiculo);
       }
+    }
+  }
+
+  private normalizePhoneNumber(phone: string, country: string): string {
+    try {
+      const number = this.phoneUtil.parse(phone, country);
+      if (this.phoneUtil.isValidNumber(number)) {
+        return this.phoneUtil.format(number, phoneUtil.PhoneNumberFormat.E164);
+      } else {
+        console.warn(`Número de teléfono no válido: ${phone}`);
+        return phone;
+      }
+    } catch (error) {
+      console.error(`Error al normalizar el número de teléfono ${phone}: ${error.message}`);
+      return phone; // Devolver el número original si hay un error
     }
   }
 }
