@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ClienteVehiculoService } from './cliente-vehicle.service';
 
 
@@ -11,7 +11,6 @@ export class ClienteVehiculoController {
 
   @Get()
   async getAllLeads(@Query() query) {
-    console.log('Received query:', query); // For debugging
   
     const { _start = '0', _end = '10', _sort = 'id', _order = 'ASC', ...filter } = query;
     
@@ -33,4 +32,35 @@ export class ClienteVehiculoController {
     };
   }
 
+  @Delete(':id')
+  async deleteLead(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.clienteVehiculoService.remove(id);
+      return { data: { id } };
+    } catch (error) {
+      console.error(`Error eliminando el cliente con ID ${id}:`, error.message);
+      throw new BadRequestException(`No se pudo eliminar el cliente con ID ${id}`);
+    }
+  }
+
+  @Delete()
+  async deleteLeads(@Body('ids') ids: number[]) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException('Debe proporcionar un array de IDs de clientes para eliminar.');
+    }
+
+    console.log(ids, '<--- IDs de clientes a eliminar');
+
+    try {
+      const results = await Promise.all(ids.map(async (id) => {
+        await this.clienteVehiculoService.remove(id);
+        return id;
+      }));
+
+      return { data: results };
+    } catch (error) {
+      console.error('Error eliminando múltiples clientes:', error.message);
+      throw new BadRequestException('Ocurrió un error al eliminar múltiples registros.');
+    }
+  }
 }

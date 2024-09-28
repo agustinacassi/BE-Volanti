@@ -13,7 +13,6 @@ export class NormalizationController {
   async normalization(@Body() body: { data }) {
     try {
       const normalizedData = await this.normalizationService.normalizeData(body);
-      console.log(normalizedData, "normalized data")
       await this.clienteVehiculoService.createNormalizedFromCSV(normalizedData);
       return { success: true, message: 'Data normalized and saved successfully' };
     } catch (error) {

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Cliente } from 'src/database/entities/client.entity';
 import { ClientesVehiculos } from 'src/database/entities/client_vehicle.entity';
 import { Vehiculo } from 'src/database/entities/vehicle.entity';
@@ -28,7 +28,6 @@ export class ClienteVehiculoService {
   }
 
   async createNormalizedFromCSV(wordwareRawData: string): Promise<void> {
-    console.log(wordwareRawData, 'raw');
     
     // Parsear la cadena de entrada en un array de objetos
     const responseObjects = wordwareRawData
@@ -75,7 +74,6 @@ export class ClienteVehiculoService {
   
     for (const item of cleanJson) {
       const normalizedPhone = this.normalizePhoneNumber(item.phone, item.country);
-      console.log(normalizedPhone, "normalized phone")
 
       // Verificar si el cliente ya existe
       let cliente = await this.clienteRepository.findOne({ where: { phone: normalizedPhone } });
@@ -193,4 +191,31 @@ export class ClienteVehiculoService {
   return phone; // Devolver el número en caso de no poder normalizar correctamente
   }
 
+  async remove(clienteId: number): Promise<void> {
+    const clientesVehiculos = await this.clientesVehiculosRepository.find({
+      where: { cliente: { id: clienteId } },
+      relations: ['cliente', 'vehiculo'],
+    });
+
+    if (clientesVehiculos.length === 0) {
+      throw new NotFoundException(`No se encontraron relaciones para el cliente con ID ${clienteId}`);
+    }
+
+    // Eliminar todas las relaciones cliente-vehículo
+    await this.clientesVehiculosRepository.remove(clientesVehiculos);
+
+    // Eliminar el cliente
+    await this.clienteRepository.delete(clienteId);
+
+    // Eliminar vehículos que ya no están asociados a ningún cliente
+    for (const cv of clientesVehiculos) {
+      const vehiculoTieneMasClientes = await this.clientesVehiculosRepository.count({
+        where: { vehiculo: { id: cv.vehiculo.id } },
+      });
+      if (vehiculoTieneMasClientes === 0) {
+        await this.vehiculoRepository.delete(cv.vehiculo.id);
+      }
+    }
+  }
+  
 }
