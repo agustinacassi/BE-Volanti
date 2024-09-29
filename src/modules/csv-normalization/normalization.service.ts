@@ -1,10 +1,21 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
 @Injectable()
 export class NormalizationService {
-  private readonly apiUrl = 'https://app.wordware.ai/api/released-app/64bbca92-d364-4039-9e05-ea73b86c3913/run';
-  private readonly apiKey = 'ww-DSKxistXoUarnh544nPkXzshGzhTQskTdrr9lKo9nyu7qBcXXofK61';
+  private readonly apiUrl: string;
+  private readonly apiKey: string;
+
+  constructor(private configService: ConfigService) {
+    this.apiUrl = this.configService.get<string>('WORDWARE_API_URL');
+    console.log(this.apiUrl, "api url")
+    this.apiKey = this.configService.get<string>('WORDWARE_API_KEY');
+
+    if (!this.apiUrl || !this.apiKey) {
+      throw new Error('Wordware API configuration is missing');
+    }
+  }
 
   async normalizeData(data): Promise<any> {
     try {
@@ -23,7 +34,6 @@ export class NormalizationService {
           },
         }
       );
-      //OK
       return response.data;
     } catch (error) {
       console.error('Error in normalizeData:', error.response?.data || error.message);
