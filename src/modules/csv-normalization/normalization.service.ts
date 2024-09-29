@@ -9,7 +9,6 @@ export class NormalizationService {
 
   constructor(private configService: ConfigService) {
     this.apiUrl = this.configService.get<string>('WORDWARE_API_URL');
-    console.log(this.apiUrl, "api url")
     this.apiKey = this.configService.get<string>('WORDWARE_API_KEY');
 
     if (!this.apiUrl || !this.apiKey) {

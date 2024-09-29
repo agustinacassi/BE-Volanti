@@ -61,6 +61,12 @@ Para iniciar el servidor de desarrollo, ejecuta:
 npm run start:dev
 ```
 
+## Información adicional
+
+La normalización se realiza con el siguiente agente deployado en Wordware AI:
+
+https://app.wordware.ai/explore/featured/64bbca92-d364-4039-9e05-ea73b86c3913
+
 ## Soporte
 
 Quedo a disposición si hay preguntas :)

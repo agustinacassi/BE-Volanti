@@ -1,10 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ClienteVehiculoService } from './cliente-vehicle.service';
 
-
-/**
- * Controller to handle operations related to clients (leads) and their associated vehicles.
- */
 @Controller('clientes_vehiculos')
 export class ClienteVehiculoController {
   constructor(private readonly clienteVehiculoService: ClienteVehiculoService) {}
@@ -48,8 +44,6 @@ export class ClienteVehiculoController {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new BadRequestException('Debe proporcionar un array de IDs de clientes para eliminar.');
     }
-
-    console.log(ids, '<--- IDs de clientes a eliminar');
 
     try {
       const results = await Promise.all(ids.map(async (id) => {
