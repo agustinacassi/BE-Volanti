@@ -1,0 +1,22 @@
+-- CREATE TABLE clientes (
+--     id SERIAL PRIMARY KEY,
+--     nombre VARCHAR(255) NOT NULL,
+--     pais VARCHAR(255) NOT NULL,
+--     telefono VARCHAR(20) UNIQUE NOT NULL,
+--     alias VARCHAR(255),
+--     es_empresa BOOLEAN NOT NULL,
+--     genero CHAR(1) CHECK (genero IN ('M', 'F') OR genero IS NULL)
+-- );
+
+-- CREATE TABLE vehiculos (
+--     id SERIAL PRIMARY KEY,
+--     marca VARCHAR(255) NOT NULL,
+--     modelo VARCHAR(255),
+--     matricula VARCHAR(20) UNIQUE NOT NULL
+-- );
+
+-- CREATE TABLE clientes_vehiculos (
+--     cliente_id INTEGER REFERENCES clientes(id),
+--     vehiculo_id INTEGER REFERENCES vehiculos(id),
+--     PRIMARY KEY (cliente_id, vehiculo_id)
+-- );
